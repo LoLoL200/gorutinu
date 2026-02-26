@@ -2,15 +2,31 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 func main() {
-	msg := make(chan string, 3)
-	msg <- "Hello"
-	msg <- "World"
-	msg <- "Go"
+	msg1 := make(chan string)
+	msg2 := make(chan string)
+	go func() {
+		for {
+			time.Sleep(time.Millisecond * 500)
+			msg1 <- "Прошло 0.5 секунды"
+		}
+	}()
 
-	fmt.Println(<-msg)
-	fmt.Println(<-msg)
-	fmt.Println(<-msg)
+	go func() {
+		for {
+			time.Sleep(time.Second * 2)
+			msg2 <- "Прошло 2 секунды"
+		}
+	}()
+	for {
+		select {
+		case m1 := <-msg1:
+			fmt.Println(m1)
+		case m2 := <-msg2:
+			fmt.Println(m2)
+		}
+	}
 }
