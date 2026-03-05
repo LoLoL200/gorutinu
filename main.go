@@ -5,28 +5,14 @@ import (
 	"time"
 )
 
-func main() {
-	msg1 := make(chan string)
-	msg2 := make(chan string)
-	go func() {
-		for {
-			time.Sleep(time.Millisecond * 500)
-			msg1 <- "Прошло 0.5 секунды"
-		}
-	}()
+var counter int
 
-	go func() {
-		for {
-			time.Sleep(time.Second * 2)
-			msg2 <- "Прошло 2 секунды"
-		}
-	}()
-	for {
-		select {
-		case m1 := <-msg1:
-			fmt.Println(m1)
-		case m2 := <-msg2:
-			fmt.Println(m2)
-		}
+func main() {
+	for range 1000 {
+		go func() {
+			counter++
+		}()
 	}
+	time.Sleep(time.Second)
+	fmt.Println("Counter:", counter)
 }
