@@ -8,15 +8,19 @@ import (
 
 type BankAccount struct {
 	balance int
+	mu      sync.Mutex
 }
 
 func (ba *BankAccount) Withdraw(amount int) bool {
+	ba.mu.Lock()
+	defer ba.mu.Unlock()
 	if ba.balance >= amount {
 		time.Sleep(time.Microsecond)
 		ba.balance -= amount
 		return true
 
 	}
+
 	return false
 }
 func (ba *BankAccount) GetBalance() int {
