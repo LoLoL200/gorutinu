@@ -6,27 +6,23 @@ import (
 	"time"
 )
 
-func doWork(ctx context.Context, name string) {
-	for {
-		select {
-		case <-ctx.Done():
-			fmt.Printf("%s: Work cencelled : %v\n", name, ctx.Err())
-			return
-		default:
-			fmt.Printf("%s: Working ...\n", name)
-			time.Sleep(500 * time.Millisecond)
-		}
-	}
-}
-
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	go doWork(ctx, "Worker 1")
-	go doWork(ctx, "Worker 2")
+	ctx, cencel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cencel()
 
-	time.Sleep(2 * time.Second)
-	fmt.Println("Cancelling work ...")
-	cancel()
+	done := make(chan struct{})
+	go func() {
+		fmt.Println("Почав роботу...")
+		time.Sleep(3 * time.Second)
+		fmt.Println("Почав роботу...")
+		close(done)
+	}()
 
-	time.Sleep(time.Second)
+	select {
+	case <-done:
+		fmt.Println("Операция завершилась успишно")
+	case <-ctx.Done():
+		fmt.Println("Таймаут! Операция перервана", ctx.Err())
+
+	}
 }
