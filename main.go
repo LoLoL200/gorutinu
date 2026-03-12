@@ -1,27 +1,32 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"sync"
+	"time"
 )
 
-var (
-	counter int
-	mu      sync.Mutex
-)
+func doWork(ctx context.Context, name string) {
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("%s: Work cencelled : %v\n", name, ctx.Err())
+			return
+		default:
+			fmt.Printf("%s: Working ...\n", name)
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+}
 
 func main() {
-	var wg sync.WaitGroup
-	for range 1000 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			mu.Lock()
-			counter++
-			mu.Unlock()
+	ctx, cancel := context.WithCancel(context.Background())
+	go doWork(ctx, "Worker 1")
+	go doWork(ctx, "Worker 2")
 
-		}()
-	}
-	wg.Wait()
-	fmt.Println("Counter:", counter)
+	time.Sleep(2 * time.Second)
+	fmt.Println("Cancelling work ...")
+	cancel()
+
+	time.Sleep(time.Second)
 }
